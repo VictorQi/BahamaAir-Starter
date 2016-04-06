@@ -90,30 +90,56 @@ class ViewController: UIViewController, UITextFieldDelegate {
     override func viewWillAppear(animated: Bool) {
         super.viewWillAppear(animated)
         
-        heading.center.x -= view.bounds.width
-        username.center.x -= view.bounds.width
-        password.center.x -= view.bounds.width
+//        heading.center.x -= view.bounds.width
+//        username.center.x -= view.bounds.width
+//        password.center.x -= view.bounds.width
         loginButton.center.y += 30
         
-        cloud1.alpha = 0.0
-        cloud2.alpha = 0.0
-        cloud3.alpha = 0.0
-        cloud4.alpha = 0.0
+        cloud1.layer.opacity = 0.0
+        cloud2.layer.opacity = 0.0
+        cloud3.layer.opacity = 0.0
+        cloud4.layer.opacity = 0.0
+//        cloud1.alpha = 0.0
+//        cloud2.alpha = 0.0
+//        cloud3.alpha = 0.0
+//        cloud4.alpha = 0.0
         loginButton.alpha = 0.0
     }
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
-        UIView.animateWithDuration(0.5) {
-            self.heading.center.x += self.view.bounds.width
-        }
-        UIView.animateWithDuration(0.5, delay: 0.3, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.0, options: [], animations: {
-            self.username.center.x += self.view.bounds.width
-            }, completion: nil)
-        UIView.animateWithDuration(0.5, delay: 0.4, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.0, options: [], animations: {
-            self.password.center.x += self.view.bounds.width
-            }, completion: nil)
+        let flyRight = CABasicAnimation(keyPath: "position.x")
+        flyRight.fromValue = -view.bounds.width/2
+        flyRight.toValue = view.bounds.width/2
+        flyRight.fillMode = kCAFillModeBoth
+        flyRight.duration = 0.5
+        
+        heading.layer.addAnimation(flyRight, forKey: nil)
+        
+        heading.layer.position.x = view.bounds.width/2
+        
+        flyRight.beginTime = CACurrentMediaTime() + 0.3
+        
+        username.layer.addAnimation(flyRight, forKey: nil)
+        
+        username.layer.position.x = view.bounds.width/2
+        
+        flyRight.beginTime = CACurrentMediaTime() + 0.4
+        
+        password.layer.addAnimation(flyRight, forKey: nil)
+        
+        password.layer.position.x = view.bounds.width/2
+        
+//        UIView.animateWithDuration(0.5) {
+//            self.heading.center.x += self.view.bounds.width
+//        }
+//        UIView.animateWithDuration(0.5, delay: 0.3, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.0, options: [], animations: {
+//            self.username.center.x += self.view.bounds.width
+//            }, completion: nil)
+//        UIView.animateWithDuration(0.5, delay: 0.4, usingSpringWithDamping: 0.6, initialSpringVelocity: 0.0, options: [], animations: {
+//            self.password.center.x += self.view.bounds.width
+//            }, completion: nil)
         
         UIView.animateWithDuration(0.5,
                                    delay: 0.5,
@@ -126,19 +152,40 @@ class ViewController: UIViewController, UITextFieldDelegate {
             },
                                    completion: nil)
         
+        let fadeCloud = CABasicAnimation(keyPath: "opacity")
+        fadeCloud.fromValue = 0.0
+        fadeCloud.toValue = 1.0
+        fadeCloud.duration = 0.5
+        fadeCloud.fillMode = kCAFillModeBackwards
         
-        UIView.animateWithDuration(0.5, delay: 0.5, options: [.CurveEaseOut], animations: {
-            self.cloud1.alpha = 1.0
-            }, completion: nil)
-        UIView.animateWithDuration(0.5, delay: 0.7, options: [.CurveEaseOut], animations: {
-            self.cloud2.alpha = 1.0
-            }, completion: nil)
-        UIView.animateWithDuration(0.5, delay: 0.9, options: [.CurveEaseOut], animations: {
-            self.cloud3.alpha = 1.0
-            }, completion: nil)
-        UIView.animateWithDuration(0.5, delay: 1.1, options: [.CurveEaseOut], animations: {
-            self.cloud4.alpha = 1.0
-            }, completion: nil)
+        fadeCloud.beginTime = CACurrentMediaTime() + 0.5
+        cloud1.layer.addAnimation(fadeCloud, forKey: nil)
+        cloud1.layer.opacity = 1.0
+        
+        fadeCloud.beginTime = CACurrentMediaTime() + 0.7
+        cloud2.layer.addAnimation(fadeCloud, forKey: nil)
+        cloud2.layer.opacity = 1.0
+        
+        fadeCloud.beginTime = CACurrentMediaTime() + 0.9
+        cloud3.layer.addAnimation(fadeCloud, forKey: nil)
+        cloud3.layer.opacity = 1.0
+        
+        fadeCloud.beginTime = CACurrentMediaTime() + 1.1
+        cloud4.layer.addAnimation(fadeCloud, forKey: nil)
+        cloud4.layer.opacity = 1.0
+//        
+//        UIView.animateWithDuration(0.5, delay: 0.5, options: [.CurveEaseOut], animations: {
+//            self.cloud1.alpha = 1.0
+//            }, completion: nil)
+//        UIView.animateWithDuration(0.5, delay: 0.7, options: [.CurveEaseOut], animations: {
+//            self.cloud2.alpha = 1.0
+//            }, completion: nil)
+//        UIView.animateWithDuration(0.5, delay: 0.9, options: [.CurveEaseOut], animations: {
+//            self.cloud3.alpha = 1.0
+//            }, completion: nil)
+//        UIView.animateWithDuration(0.5, delay: 1.1, options: [.CurveEaseOut], animations: {
+//            self.cloud4.alpha = 1.0
+//            }, completion: nil)
         
         self.animateCloud(cloud1)
         
@@ -163,12 +210,15 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         UIView.animateWithDuration(0.33, delay: 0.0, usingSpringWithDamping: 0.7, initialSpringVelocity: 0.0, options: [], animations: {
             self.loginButton.center.y += 60
-            self.loginButton.backgroundColor = UIColor(red: 0.85, green: 0.83, blue: 0.45, alpha: 1.0)
+//            self.loginButton.backgroundColor = UIColor(red: 0.85, green: 0.83, blue: 0.45, alpha: 1.0)
             
             self.spinner.center = CGPointMake(40, self.loginButton.frame.size.height / 2)
             self.spinner.alpha = 1.0
             }, completion: nil)
         
+        let color = UIColor(red: 0.85, green: 0.83, blue: 0.45, alpha: 1.0)
+        self.tintBackgroudColor(loginButton.layer, toColor: color)
+        roundCorner(layer: loginButton.layer, toRadius: 25.0)
     }
     
     func showMessage(index index: Int) {
@@ -211,10 +261,16 @@ class ViewController: UIViewController, UITextFieldDelegate {
             self.spinner.frame.origin = self.spinnerPosition
             self.spinner.alpha = 0.0
             
-            self.loginButton.backgroundColor = UIColor(red: 0.63, green: 0.84, blue: 0.35, alpha: 1.0)
+//            self.loginButton.backgroundColor = UIColor(red: 0.63, green: 0.84, blue: 0.35, alpha: 1.0)
             self.loginButton.bounds.size.width -= 80
             self.loginButton.center.y -= 60
-            }, completion: nil)
+            }, completion: {_ in
+                let tintColor = UIColor(red: 0.63, green: 0.84, blue: 0.35, alpha:1.0)
+                self.tintBackgroudColor(self.loginButton.layer, toColor: tintColor)
+                self.roundCorner(layer: self.loginButton.layer, toRadius: 10.0)
+        })
+        
+        
     }
     
     func animateCloud(cloud: UIImageView) {
@@ -230,6 +286,26 @@ class ViewController: UIViewController, UITextFieldDelegate {
             cloud.frame.origin.x = -self.view.frame.size.width
             self.animateCloud(cloud)
         }
+    }
+    
+    func tintBackgroudColor(layer: CALayer, toColor: UIColor) {
+        let tintBC = CABasicAnimation(keyPath: "backgroudColor")
+        tintBC.fromValue = layer.backgroundColor
+        tintBC.toValue = toColor.CGColor
+        tintBC.duration = 1.0
+        
+        layer.addAnimation(tintBC, forKey: nil)
+        layer.backgroundColor = toColor.CGColor
+    }
+    
+    func roundCorner(layer alayer: CALayer, toRadius: CGFloat) {
+        let roundC = CABasicAnimation(keyPath: "cornerRadius")
+        roundC.fromValue = alayer.cornerRadius
+        roundC.toValue = toRadius
+        roundC.duration = 0.33
+        
+        alayer.addAnimation(roundC, forKey: nil)
+        alayer.cornerRadius = toRadius
     }
     
     // MARK: UITextFieldDelegate
