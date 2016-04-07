@@ -32,7 +32,7 @@ func delay(seconds seconds: Double, completion:()->()) {
 }
 
 
-class ViewController: UIViewController, UITextFieldDelegate {
+class ViewController: UIViewController {
     
     // MARK: IB outlets
     
@@ -53,6 +53,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
     let status = UIImageView(image: UIImage(named: "banner"))
     let label = UILabel()
     let messages = ["Connecting ...", "Authorizing ...", "Sending credentials ...", "Failed"]
+    let info = UILabel()
     
     // MARK: variables
     
@@ -84,6 +85,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
         label.textColor = UIColor(red: 0.89, green: 0.38, blue: 0.0, alpha: 1.0)
         label.textAlignment = .Center
         status.addSubview(label)
+        
+        info.frame = CGRect(x: 0.0, y: loginButton.center.y + 60.0, width: view.frame.width, height: 30)
+        info.font = UIFont(name: "HelveticaNeue", size: 12.0)
+        info.textColor = UIColor.whiteColor()
+        info.textAlignment = .Center
+        info.text = "Tap on a field and enter username and password"
+        view.addSubview(info)
  
     }
     
@@ -93,7 +101,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
 //        heading.center.x -= view.bounds.width
 //        username.center.x -= view.bounds.width
 //        password.center.x -= view.bounds.width
-        loginButton.center.y += 30
+//        loginButton.center.y += 30
+//        loginButton.alpha = 0.0
         
         cloud1.layer.opacity = 0.0
         cloud2.layer.opacity = 0.0
@@ -103,33 +112,53 @@ class ViewController: UIViewController, UITextFieldDelegate {
 //        cloud2.alpha = 0.0
 //        cloud3.alpha = 0.0
 //        cloud4.alpha = 0.0
-        loginButton.alpha = 0.0
+        
     }
     
     override func viewDidAppear(animated: Bool) {
         super.viewDidAppear(animated)
         
+        username.delegate = self
+        password.delegate = self
+        
+        let formGroup = CAAnimationGroup()
+        formGroup.duration = 0.5
+        formGroup.fillMode = kCAFillModeBackwards
+        
+        let fadeText = CABasicAnimation(keyPath: "opacity")
+        fadeText.fromValue = 0.25
+        fadeText.toValue = 1.0
+        
         let flyRight = CABasicAnimation(keyPath: "position.x")
         flyRight.fromValue = -view.bounds.width/2
         flyRight.toValue = view.bounds.width/2
-        flyRight.fillMode = kCAFillModeBoth
-        flyRight.duration = 0.5
         
-        heading.layer.addAnimation(flyRight, forKey: nil)
+        formGroup.animations = [fadeText, flyRight]
+        heading.layer.addAnimation(formGroup, forKey: nil)
         
-        heading.layer.position.x = view.bounds.width/2
+        formGroup.delegate = self
+        formGroup.setValue("form", forKey: "name")
+        formGroup.setValue(username.layer, forKey: "layer")
+        formGroup.beginTime = CACurrentMediaTime() + 0.3
+        username.layer.addAnimation(formGroup, forKey: nil)
         
-        flyRight.beginTime = CACurrentMediaTime() + 0.3
+        formGroup.setValue(password.layer, forKey: "layer")
+        formGroup.beginTime = CACurrentMediaTime() + 0.4
+        password.layer.addAnimation(formGroup, forKey: nil)
         
-        username.layer.addAnimation(flyRight, forKey: nil)
+        let flyLeft = CABasicAnimation(keyPath: "position.x")
+        flyLeft.fromValue = info.layer.position.x + view.bounds.width
+        flyLeft.toValue = info.layer.position.x
+        flyLeft.duration = 5.0
+//        flyLeft.repeatCount = 2.5  // use half an animation cycle to avoid label jump from offscreen to center
+//        flyLeft.autoreverses = true
+        info.layer.addAnimation(flyLeft, forKey: "infoappear")
         
-        username.layer.position.x = view.bounds.width/2
-        
-        flyRight.beginTime = CACurrentMediaTime() + 0.4
-        
-        password.layer.addAnimation(flyRight, forKey: nil)
-        
-        password.layer.position.x = view.bounds.width/2
+        let fadeLabelIn = CABasicAnimation(keyPath: "opacity")
+        fadeLabelIn.fromValue = 0.2
+        fadeLabelIn.toValue = 1.0
+        fadeLabelIn.duration = 4.5
+        info.layer.addAnimation(fadeLabelIn, forKey: "fadein")
         
 //        UIView.animateWithDuration(0.5) {
 //            self.heading.center.x += self.view.bounds.width
@@ -141,16 +170,37 @@ class ViewController: UIViewController, UITextFieldDelegate {
 //            self.password.center.x += self.view.bounds.width
 //            }, completion: nil)
         
-        UIView.animateWithDuration(0.5,
-                                   delay: 0.5,
-                                   usingSpringWithDamping: 0.5,
-                                   initialSpringVelocity: 0.0,
-                                   options: [],
-                                   animations: {
-                                    self.loginButton.center.y -= 30
-                                    self.loginButton.alpha = 1.0
-            },
-                                   completion: nil)
+        let group = CAAnimationGroup()
+        group.beginTime = CACurrentMediaTime() + 0.5
+        group.duration = 0.5
+        group.fillMode = kCAFillModeBackwards
+        
+        let scaleDown = CABasicAnimation(keyPath: "transform.scale")
+        scaleDown.fromValue = 3.5
+        scaleDown.toValue = 1.0
+        
+        let rotate = CABasicAnimation(keyPath: "transform.rotation")
+        rotate.fromValue = CGFloat(M_PI_4)
+        rotate.toValue = 0.0
+        
+        let fadeIn = CABasicAnimation(keyPath: "opacity")
+        fadeIn.fromValue = 0.0
+        fadeIn.toValue = 1.0
+        
+        group.animations = [scaleDown, rotate, fadeIn]
+        group.timingFunction = CAMediaTimingFunction(name: kCAMediaTimingFunctionEaseIn)
+        loginButton.layer.addAnimation(group, forKey: nil)
+        
+//        UIView.animateWithDuration(0.5,
+//                                   delay: 0.5,
+//                                   usingSpringWithDamping: 0.5,
+//                                   initialSpringVelocity: 0.0,
+//                                   options: [],
+//                                   animations: {
+//                                    self.loginButton.center.y -= 30
+//                                    self.loginButton.alpha = 1.0
+//            },
+//                                   completion: nil)
         
         let fadeCloud = CABasicAnimation(keyPath: "opacity")
         fadeCloud.fromValue = 0.0
@@ -187,13 +237,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
 //            self.cloud4.alpha = 1.0
 //            }, completion: nil)
         
-        self.animateCloud(cloud1)
+        self.animateCloud(cloud1.layer)
         
-        self.animateCloud(cloud2)
+        self.animateCloud(cloud2.layer)
         
-        self.animateCloud(cloud3)
+        self.animateCloud(cloud3.layer)
         
-        self.animateCloud(cloud4)
+        self.animateCloud(cloud4.layer)
     }
     
     // MARK: further methods
@@ -273,19 +323,35 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
     }
     
-    func animateCloud(cloud: UIImageView) {
-        let cloudSpeed = 60.0 / self.view.bounds.size.width
-        let duration = (self.view.bounds.size.width - cloud.frame.origin.x) * cloudSpeed
+    
+    // This animation will flash at the end 
+    // Use fillMode = kCAFillModeForwards and removedOnCompletion = false to solve pre-problem
+    func animateCloud(cloudLayer: CALayer) {
         
-        UIView.animateWithDuration(NSTimeInterval(duration),
-                                   delay: 0.0,
-                                   options: [.CurveLinear],
-                                   animations: {
-                                    cloud.frame.origin.x = self.view.frame.width
-        }){ _ in
-            cloud.frame.origin.x = -self.view.frame.size.width
-            self.animateCloud(cloud)
-        }
+        let cloudSpeed = 60.0 / Double(view.layer.frame.size.width)
+        let duration: NSTimeInterval = Double(view.layer.frame.size.width - cloudLayer.frame.origin.x) * cloudSpeed
+        
+        let cloudMove = CABasicAnimation(keyPath: "position.x")
+        cloudMove.duration = duration
+        cloudMove.toValue = self.view.bounds.width + cloudLayer.frame.width / 2.0
+        cloudMove.fillMode = kCAFillModeForwards
+        cloudMove.removedOnCompletion = false
+        cloudMove.delegate = self
+        cloudMove.setValue("cloud", forKey: "name")
+        cloudMove.setValue(cloudLayer, forKey: "layer")
+        
+        cloudLayer.addAnimation(cloudMove, forKey: "cloudmove")
+        
+//        UIView.animateWithDuration(duration,
+//                                   delay: 0.0,
+//                                   options: [.CurveLinear],
+//                                   animations: {
+//                                    cloud.frame.origin.x = self.view.frame.width
+//        }){ _ in
+//            cloud.frame.origin.x = -self.view.frame.size.width
+//            self.animateCloud(cloud)
+//        }
+
     }
     
     func tintBackgroudColor(layer: CALayer, toColor: UIColor) {
@@ -316,5 +382,50 @@ class ViewController: UIViewController, UITextFieldDelegate {
         return true
     }
     
+    // MARK: CAAnimation Delegate
+    
+    override func animationDidStop(anim: CAAnimation, finished flag: Bool) {
+        if let name = anim.valueForKey("name") as? String {
+            if name == "form" {
+                let layer = anim.valueForKey("layer") as? CALayer
+                anim.setValue(nil, forKey: "layer") // this pulse animation will only happen the first time in form right
+                
+                // this only work properly in ios 9.0+
+                let pulse = CASpringAnimation(keyPath: "transform.scale")
+                pulse.fromValue = 1.25
+                pulse.toValue = 1.0
+                pulse.damping = 7.5 //a greater damping value means the pendulum will settle faster.
+                pulse.duration = pulse.settlingDuration
+                
+                layer?.addAnimation(pulse, forKey: nil)  // cast operation can fail, use optionals to handle errors
+                
+            }
+            if name == "cloud" {
+                if let layer = anim.valueForKey("layer") as? CALayer {
+                    anim.setValue(nil, forKey: "layer")
+                    layer.removeAnimationForKey("cloudmove")
+                    layer.position.x = -layer.bounds.width/2
+                    delay(seconds: 0.5, completion: {
+                        self.animateCloud(layer)
+                    })
+                }
+            }
+        }
+        
+    }
+    
 }
 
+
+
+// MARK: UITextField Delegate
+
+// Separating protocols into their own extensions like this helps keep the file organized.
+
+extension ViewController:UITextFieldDelegate {
+    func textFieldDidBeginEditing(textField: UITextField) {
+        print(info.layer.animationKeys())
+        
+        info.layer.removeAnimationForKey("infoappear")
+    }
+}
