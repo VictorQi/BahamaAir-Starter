@@ -22,6 +22,7 @@
 
 import UIKit
 
+
 // A delay function
 func delay(seconds seconds: Double, completion:()->()) {
     let popTime = dispatch_time(DISPATCH_TIME_NOW, Int64( Double(NSEC_PER_SEC) * seconds ))
@@ -76,7 +77,7 @@ class ViewController: UIViewController {
         loginButton.addSubview(spinner)
         
         status.hidden = true
-        status.center = loginButton.center
+        status.center = CGPoint(x: view.center.x, y: loginButton.center.y)
         statusPosition = status.center
         view.addSubview(status)
         
@@ -86,7 +87,7 @@ class ViewController: UIViewController {
         label.textAlignment = .Center
         status.addSubview(label)
         
-        info.frame = CGRect(x: 0.0, y: loginButton.center.y + 60.0, width: view.frame.width, height: 30)
+        info.frame = CGRect(x: 0.0, y: loginButton.center.y + 80.0, width: view.frame.width, height: 30)
         info.font = UIFont(name: "HelveticaNeue", size: 12.0)
         info.textColor = UIColor.whiteColor()
         info.textAlignment = .Center
@@ -251,6 +252,22 @@ class ViewController: UIViewController {
     @IBAction func login() {
         view.endEditing(true)
         
+        let ballon = CALayer()
+        ballon.contents = UIImage(named: "balloon")!.CGImage
+        ballon.frame = CGRect(x: -50.0, y: 0.0, width: 50.0, height: 65.0)
+        view.layer.insertSublayer(ballon, below: username.layer)
+        
+        let flight = CAKeyframeAnimation(keyPath: "position")
+        flight.duration = 12.0
+        flight.values = [CGPoint(x: -50.0, y: 0.0),
+                         CGPoint(x: view.frame.width+50.0, y: 160.0),
+            CGPoint(x: -50.0, y: loginButton.center.y)].map {
+                NSValue(CGPoint: $0)
+        }
+        flight.keyTimes = [0.0, 0.5, 1.0]
+        
+        ballon.addAnimation(flight, forKey: nil)
+        ballon.position = CGPoint(x: -50.0, y: loginButton.center.y)
         
         UIView.animateWithDuration(1.5, delay: 0.0, usingSpringWithDamping: 0.2, initialSpringVelocity: 0.0, options: [], animations: {
             self.loginButton.bounds.size.width += 80
@@ -300,7 +317,16 @@ class ViewController: UIViewController {
     }
     
     func resetForm() {
-        UIView.animateWithDuration(0.2, delay: 0.0, options: [.CurveEaseIn, .TransitionCurlUp], animations: { 
+        
+        let wobble = CAKeyframeAnimation(keyPath: "transform.rotation")
+        wobble.values = [0.0, -M_PI_4, 0.0, M_PI_4, 0.0]
+        wobble.keyTimes = [0.0, 0.25, 0.5, 0.75, 1.0]
+        wobble.repeatCount = 4
+        wobble.duration = 0.25
+        heading.layer.addAnimation(wobble, forKey: nil)
+        
+        
+        UIView.animateWithDuration(0.2, delay: 0.0, options: [.CurveEaseIn, .TransitionCurlUp], animations: {
             self.status.hidden = true
             self.status.center = self.statusPosition
             }) { _ in
@@ -319,6 +345,7 @@ class ViewController: UIViewController {
                 self.tintBackgroudColor(self.loginButton.layer, toColor: tintColor)
                 self.roundCorner(layer: self.loginButton.layer, toRadius: 10.0)
         })
+        
         
         
     }
@@ -355,32 +382,29 @@ class ViewController: UIViewController {
     }
     
     func tintBackgroudColor(layer: CALayer, toColor: UIColor) {
-        let tintBC = CABasicAnimation(keyPath: "backgroudColor")
+        let tintBC = CASpringAnimation(keyPath: "backgroudColor")
         tintBC.fromValue = layer.backgroundColor
         tintBC.toValue = toColor.CGColor
-        tintBC.duration = 1.0
+        tintBC.damping = 2.0
+        tintBC.stiffness = 200.0
+        tintBC.duration = tintBC.settlingDuration
         
         layer.addAnimation(tintBC, forKey: nil)
         layer.backgroundColor = toColor.CGColor
     }
     
     func roundCorner(layer alayer: CALayer, toRadius: CGFloat) {
-        let roundC = CABasicAnimation(keyPath: "cornerRadius")
+        let roundC = CASpringAnimation(keyPath: "cornerRadius")
         roundC.fromValue = alayer.cornerRadius
         roundC.toValue = toRadius
-        roundC.duration = 0.33
+        roundC.damping = 10.0
+        roundC.stiffness = 200.0
+        roundC.duration = roundC.settlingDuration
         
         alayer.addAnimation(roundC, forKey: nil)
         alayer.cornerRadius = toRadius
     }
     
-    // MARK: UITextFieldDelegate
-    
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
-        let nextField = (textField === username) ? password : username
-        nextField.becomeFirstResponder()
-        return true
-    }
     
     // MARK: CAAnimation Delegate
     
@@ -394,11 +418,10 @@ class ViewController: UIViewController {
                 let pulse = CASpringAnimation(keyPath: "transform.scale")
                 pulse.fromValue = 1.25
                 pulse.toValue = 1.0
-                pulse.damping = 7.5 //a greater damping value means the pendulum will settle faster.
+                pulse.damping = 4.5 //a greater damping value means the pendulum will settle faster.
                 pulse.duration = pulse.settlingDuration
                 
                 layer?.addAnimation(pulse, forKey: nil)  // cast operation can fail, use optionals to handle errors
-                
             }
             if name == "cloud" {
                 if let layer = anim.valueForKey("layer") as? CALayer {
@@ -427,5 +450,36 @@ extension ViewController:UITextFieldDelegate {
         print(info.layer.animationKeys())
         
         info.layer.removeAnimationForKey("infoappear")
+    }
+ 
+    func textFieldShouldReturn(textField: UITextField) -> Bool {
+        let nextField = (textField === username) ? password : username
+        nextField.becomeFirstResponder()
+        return true
+    }
+    
+    func textFieldDidEndEditing(textField: UITextField) {
+        if textField.text?.characters.count < 5 {
+            let jumpAnim = CASpringAnimation(keyPath: "position.y")
+            jumpAnim.fromValue = textField.layer.position.y + 1.0
+            jumpAnim.toValue = textField.layer.position.y
+            jumpAnim.damping = 50.0
+            jumpAnim.initialVelocity = 100.0
+            jumpAnim.mass = 10.0
+            jumpAnim.stiffness = 1500.0
+            jumpAnim.duration = jumpAnim.settlingDuration
+            textField.layer.addAnimation(jumpAnim, forKey: nil)
+            
+            textField.layer.borderWidth = 3.0
+            textField.layer.borderColor = UIColor.clearColor().CGColor
+            
+            let flashBorder = CASpringAnimation(keyPath: "borderColor")
+            flashBorder.damping = 7.0
+            flashBorder.stiffness = 200.0
+            flashBorder.fromValue = UIColor(red: 0.96, green: 0.27, blue: 0.0, alpha: 1.0).CGColor
+            flashBorder.toValue = UIColor.clearColor().CGColor
+            flashBorder.duration = flashBorder.settlingDuration
+            textField.layer.addAnimation(flashBorder, forKey: nil)
+        }
     }
 }
